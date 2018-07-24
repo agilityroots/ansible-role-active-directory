@@ -1,0 +1,37 @@
+---
+- name: Ensure the Domain is created on the Windows Host.
+  win_domain:
+    dns_domain_name: "{{dns_domain_name}}"
+    safe_mode_password: "{{domain_admin_password}}"
+    log_path: C:\ansible_log_win_domain.txt
+    register: win_domain_output
+
+- name: reboot if needed by previous task.
+  win_reboot:
+  when: win_domain_output.reboot_required
+
+- name: Ensure that the Host is a Domain Controller.
+  win_domain_controller:
+  dns_domain_name: "{{dns_domain_name}}"
+  domain_admin_user: "{{domain_admin_username}}"
+  domain_admin_password: "{{domain_admin_password}}"
+  safe_mode_password: "{{domain_admin_password}}"
+  state: domain_controller
+  log_path: c:\ansible_log_win_domain_controller.txt
+
+- name: Get existing OUs on the Domain.
+  win_shell: Get-ADOrganizationalUnit -Identity '{{domain_ou_path}}'
+  ignore_errors: yes
+  register: existing_ous
+
+- name: Create OU
+  win_shell: New-ADOrganizationalUnit -Name "{{domain_ou_name}}"
+  when: existing_ous|failed
+
+- name: Create Domain User Accounts.
+  win_domain_user:
+    name: "{{item}}"
+    password: "{{domain_admin_password}}"
+    groups: 'Domain Admins'
+    password_never_expires: true
+    with_items: "{{ad_accounts}}"

@@ -1,0 +1,17 @@
+dns_domain_name: ''
+domain_admin_password: 'Chang3M3!N000w'
+domain_admin_username: '{{inventory_hostname}}\{{ansible_user}}'
+domain_admin_username_client: '{{dns_name}}\{{ansible_user}}'
+domain_ou_path: 'Windows'
+
+# List of AD Accounts
+ad_accounts:
+- user1
+- user2
+- user3
+
+# OU to be created
+domain_ou_name: "Windows"
+
+# OU Path
+domain_ou_path: "OU={{domain_ou_name}},DC="
